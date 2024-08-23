@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+      <RollForward>Major</RollForward>
 	  <LangVersion>12.0</LangVersion>
 	  <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
 	  <ImplicitUsings>enable</ImplicitUsings>
