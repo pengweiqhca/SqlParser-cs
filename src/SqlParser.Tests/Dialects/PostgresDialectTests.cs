@@ -1014,7 +1014,7 @@ namespace SqlParser.Tests.Dialects
             var on = new OnInsert.Conflict(new OnConflict(new OnConflictAction.DoUpdate(new DoUpdateAction(
                 new Statement.Assignment[]
                 {
-                    new(new Ident[]{"dname"}, new CompoundIdentifier(new Ident[]
+                    new(new AssignmentTarget.ColumnName("dname"), new CompoundIdentifier(new Ident[]
                     {
                         "EXCLUDED", "dname"
                     }))
@@ -1037,13 +1037,13 @@ namespace SqlParser.Tests.Dialects
             on = new OnInsert.Conflict(new OnConflict(new OnConflictAction.DoUpdate(new DoUpdateAction(
                 new Statement.Assignment[]
                 {
-                    new(new Ident[]{"dname"}, new CompoundIdentifier(new Ident[]
+                    new(new AssignmentTarget.ColumnName("dname"), new CompoundIdentifier(new Ident[]
                     {
                         "EXCLUDED",
                         "dname"
                     })),
 
-                    new(new Ident[]{"area"}, new CompoundIdentifier(new Ident[]
+                    new(new AssignmentTarget.ColumnName("area"), new CompoundIdentifier(new Ident[]
                     {
                         "EXCLUDED",
                         "area"
@@ -2385,6 +2385,20 @@ namespace SqlParser.Tests.Dialects
             {
                 TestOperator(op, BinaryOperator.Custom);
             }
+        }
+
+        [Fact]
+        public void Parse_Create_Table_With_ColumnOption_Options()
+        {
+            const string sql = "CREATE TABLE t (c INT) WITH (foo = 'bar', a = 123)";
+
+            var create = VerifiedStatement<Statement.CreateTable>(sql);
+
+            Assert.Equal(new Sequence<SqlOption>
+            {   
+                new("foo", new LiteralValue(new Value.SingleQuotedString("bar"))),
+                new("a", new LiteralValue(new Value.Number("123"))),
+            }, create.Element.WithOptions);
         }
 
         private void TestOperator(string op, BinaryOperator binaryOp)
