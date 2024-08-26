@@ -26,7 +26,7 @@
 		<AssemblyOriginatorKeyFile>sqlparser.snk</AssemblyOriginatorKeyFile>
 		<EmbedUntrackedSources>true</EmbedUntrackedSources>
         <DebugType>embedded</DebugType>
-		<Version>0.5.1</Version>
+		<Version>0.5.1.1</Version>
 	</PropertyGroup>
 
 	<ItemGroup>
