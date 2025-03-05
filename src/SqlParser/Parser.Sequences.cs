@@ -52,7 +52,7 @@ public partial class Parser
     ///
     /// Example
     ///  Parse a SQL string with 2 separate statements
-    /// 
+    ///
     ///     parser.ParseSql("SELECT * FROM foo; SELECT * FROM bar;")
     /// </summary>
     /// <returns>List of statements parsed into an Abstract Syntax Tree</returns>
@@ -697,7 +697,7 @@ public partial class Parser
 
         while (true)
         {
-            if (PeekToken() is EOF or SemiColon)
+            if (PeekToken() is EOF or SemiColon or Word { Keyword: Keyword.OUTPUT })
             {
                 break;
             }

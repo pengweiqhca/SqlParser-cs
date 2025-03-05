@@ -80,7 +80,7 @@ public partial class Parser
             // standard `START TRANSACTION` statement. It is supported
             // by at least PostgreSQL and MySQL.
             Keyword.BEGIN => ParseBegin(),
-            // `END` is a nonstandard but common alias for the standard 
+            // `END` is a nonstandard but common alias for the standard
             // `COMMIT TRANSACTION` statement. It is supported by PostgreSQL.
             Keyword.END => ParseEnd(),
             Keyword.SAVEPOINT => new Savepoint(ParseIdentifier()),
@@ -222,7 +222,7 @@ public partial class Parser
             var attributeCollation = ParseInit (ParseKeyword(Keyword.COLLATE),  ParseObjectName);
 
             attributes.Add(new UserDefinedTypeCompositeAttributeDef(attributeName, attributeDataType, attributeCollation));
-            
+
             var comma = ConsumeToken<Comma>();
             if (ConsumeToken<RightParen>())
             {
@@ -495,7 +495,7 @@ public partial class Parser
 
         throw Expected("Expected a QUERY statement", token);
     }
-  
+
     public Statement ParseCreateFunction(bool orReplace, bool temporary)
     {
         if (_dialect is HiveDialect)
@@ -1234,7 +1234,7 @@ public partial class Parser
 
         return new Flush(objectType, location, channel, readLock, export, tables);
     }
-  
+
     public Statement.Declare ParseSnowflakeDeclare()
     {
         var statements = new Sequence<Declare>();
@@ -1563,7 +1563,7 @@ public partial class Parser
         var roleName = ParseIdentifier();
         AlterRoleOperation operation;
         var inDatabase = ParseInit(ParseKeywordSequence(Keyword.IN, Keyword.DATABASE),  ParseObjectName);
-        
+
         if (ParseKeyword(Keyword.RENAME))
         {
             if (ParseKeyword(Keyword.TO))
@@ -1956,6 +1956,7 @@ public partial class Parser
         Sequence<Ident>? columns = null;
         Sequence<Expression>? partitioned = null;
         Sequence<Ident>? afterColumns = null;
+        Sequence<SelectItem>? output = null;
         Statement.Select? source = null;
 
         if (!ParseKeywordSequence(Keyword.DEFAULT, Keyword.VALUES))
@@ -1969,6 +1970,11 @@ public partial class Parser
             if (_dialect is HiveDialect)
             {
                 afterColumns = ParseParenthesizedColumnList(IsOptional.Optional, false);
+            }
+
+            if (_dialect is MsSqlDialect or GenericDialect)
+            {
+                output = ParseInit(ParseKeyword(Keyword.OUTPUT), () => ParseCommaSeparated(ParseSelectItem));
             }
 
             source = ParseQuery();
@@ -2036,6 +2042,7 @@ public partial class Parser
             AfterColumns = afterColumns,
             Table = table,
             On = on,
+            Output = output,
             Returning = returning,
             ReplaceInto = false,
             Priority = priority,
@@ -2073,7 +2080,11 @@ public partial class Parser
         var table = ParseTableAndJoins();
         ExpectKeyword(Keyword.SET);
         var assignments = ParseCommaSeparated(ParseAssignment);
-        var from = ParseInit (ParseKeyword(Keyword.FROM) && _dialect
+        TableWithJoins? from = null;
+
+        var output = _dialect is MsSqlDialect or GenericDialect ? ParseInit(ParseKeyword(Keyword.OUTPUT), () => ParseCommaSeparated(ParseSelectItem)) : null;
+
+        if (ParseKeyword(Keyword.FROM) && _dialect
                 is GenericDialect
                 or PostgreSqlDialect
                 or DuckDbDialect
@@ -2081,14 +2092,17 @@ public partial class Parser
                 or SnowflakeDialect
                 or RedshiftDialect
                 or MsSqlDialect
-                or SQLiteDialect, 
-            ParseTableAndJoins);
+                or SQLiteDialect)
+        {
+            from = ParseTableAndJoins();
+        }
 
         var selection = ParseInit(ParseKeyword(Keyword.WHERE), ParseExpr);
         var returning = ParseInit(ParseKeyword(Keyword.RETURNING), () => ParseCommaSeparated(ParseSelectItem));
 
-        return new Update(table, assignments, from, selection, returning);
+        return new Update(table, assignments, output, from, selection, returning);
     }
+
     /// <summary>
     ///  Parse a `var = expr` assignment, used in an UPDATE statement
     /// </summary>
@@ -2143,7 +2157,7 @@ public partial class Parser
 
         return new Unload(query, to, withOptions);
     }
-    
+
     public Statement ParsePragma()
     {
         var name = ParseObjectName();

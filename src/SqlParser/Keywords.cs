@@ -64,6 +64,7 @@ internal static class Keywords
         Keyword.FROM,
         Keyword.INTO,
         Keyword.END,
+        Keyword.OUTPUT,
     ];
 
     /// Can't be used as a column alias, so that `SELECT Expression alias`
@@ -122,6 +123,7 @@ internal static class Keywords
         Keyword.AS, // TODO remove?
         // Reserved for snowflake MATCH_RECOGNIZE
         Keyword.MATCH_RECOGNIZE,
+        Keyword.OUTPUT,
     ];
 }
 
@@ -890,6 +892,7 @@ public enum Keyword
     XOR,
     YEAR,
     ZONE,
+    OUTPUT,
 
-    undefined
+    undefined = 99999,
 }

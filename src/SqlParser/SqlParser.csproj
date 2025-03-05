@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<LangVersion>12.0</LangVersion>
-		<TargetFrameworks>net8.0;net7.0;</TargetFrameworks>
+		<TargetFrameworks>net7.0;net6.0</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<Title>SqlParser - Extensible SQL Parser for .NET</Title>
@@ -24,6 +24,8 @@
 		<SignAssembly>true</SignAssembly>
 		<AssemblyOriginatorKeyFile>sqlparser.snk</AssemblyOriginatorKeyFile>
 		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <DebugType>embedded</DebugType>
+		<Version>0.5.1.1</Version>
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<PackageReadmeFile>README.md</PackageReadmeFile>

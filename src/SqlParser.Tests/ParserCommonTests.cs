@@ -179,7 +179,7 @@ public class ParserCommonTests : ParserTestBase
         var right = new CompoundIdentifier(new Ident[] { "t2", "id" });
         var selection = new BinaryOp(left, BinaryOperator.Eq, right);
 
-        var expected = new Statement.Update(table, assignments, from, selection);
+        var expected = new Statement.Update(table, assignments, null, from, selection);
 
         Assert.Equal(expected, statement);
     }
@@ -1319,7 +1319,7 @@ public class ParserCommonTests : ParserTestBase
         select = VerifiedOnlySelect("SELECT CAST(id AS VARBINARY(50)) FROM customer");
         expected = new Cast(new Identifier("id"), new Varbinary(new BinaryLength.IntegerLength(50)), CastKind.Cast);
         Assert.Equal(expected, select.Projection.Single().AsExpr());
-         
+
         select = VerifiedOnlySelect("SELECT CAST(id AS VARBINARY(MAX)) FROM customer");
         expected = new Cast(new Identifier("id"), new Varbinary(new BinaryLength.Max()), CastKind.Cast);
         Assert.Equal(expected, select.Projection.Single().AsExpr());
@@ -5271,7 +5271,7 @@ public class ParserCommonTests : ParserTestBase
     [Fact]
     public void Parser_Manages_Recursion_Depth()
     {
-        // No exception thrown guarantees recursion did not reach zero. 
+        // No exception thrown guarantees recursion did not reach zero.
         // The default depth is 50 which, if the scope is set correctly,
         // will never be reached.
         var range = Enumerable.Range(0, 100).Select(_ => "select * from tablename;");
@@ -6853,7 +6853,6 @@ public class ParserCommonTests : ParserTestBase
             "my_schema",
             "my_stored_procedure"
         ]), [
-        
             new LiteralValue(new Value.NationalStringLiteral("param1")),
             new LiteralValue(new Value.NationalStringLiteral("param2"))
         ], false, null);
@@ -6864,7 +6863,7 @@ public class ParserCommonTests : ParserTestBase
         execute = (Statement.Execute)OneStatementParsesTo(
             "EXEC my_schema.my_stored_procedure N'param1', N'param2';",
             "EXECUTE my_schema.my_stored_procedure N'param1', N'param2'");
-        
+
         Assert.Equal(expected, execute);
     }
 

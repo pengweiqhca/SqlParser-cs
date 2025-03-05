@@ -20,7 +20,7 @@ namespace SqlParser;
 
 // This record type fills in the outcome from the Rust project's macro that
 // intercepts control flow depending on parsing result.  The same flow is
-// used in the parser, and the outcome of the lambda matches this record.  
+// used in the parser, and the outcome of the lambda matches this record.
 public record MaybeParsed<T>(bool Parsed, T Result);
 
 public partial class Parser
@@ -3638,8 +3638,11 @@ public partial class Parser
     public static Value.Number ParseNumeric(Number number)
     {
         var value = number.Value;
+#if NET6_0
+        var parsed = double.TryParse(value, out _);
+#else
         var parsed = double.TryParse(value, CultureInfo.InvariantCulture, out _);
-
+#endif
         if (!parsed)
         {
             parsed = Regex.IsMatch(value, "\\d+(\\.\\d+)?e( ([-+])?\\d+)?");
@@ -3946,7 +3949,7 @@ public partial class Parser
             PrevToken();
             return new DataType.Union(ParseUnionTypeDef());
         }
-         
+
         DataType ParseUnmatched()
         {
             PrevToken();
@@ -4393,6 +4396,8 @@ public partial class Parser
     public Delete ParseDelete()
     {
         Sequence<ObjectName>? tables = null;
+        Sequence<TableWithJoins>? from = null;
+        Sequence<SelectItem>? output = null;
         var withFromKeyword = true;
 
         if (!ParseKeyword(Keyword.FROM))
@@ -4400,16 +4405,48 @@ public partial class Parser
             if (_dialect is BigQueryDialect or GenericDialect)
             {
                 withFromKeyword = false;
+
+                output = ParseInit(ParseKeyword(Keyword.OUTPUT), () => ParseCommaSeparated(ParseSelectItem));
+
+                from = ParseCommaSeparated(ParseTableAndJoins);
             }
             else
             {
                 tables = ParseCommaSeparated(ParseObjectName);
-                ExpectKeyword(Keyword.FROM);
-                withFromKeyword = true;
+
+                if (_dialect is MsSqlDialect)
+                {
+                    output = ParseInit(ParseKeyword(Keyword.OUTPUT), () => ParseCommaSeparated(ParseSelectItem));
+
+                    if (ParseKeyword(Keyword.FROM))
+                    {
+                        from = ParseCommaSeparated(ParseTableAndJoins);
+                    }
+                    else
+                    {
+                        withFromKeyword = false;
+                        from = [];
+                    }
+                }
+                else
+                {
+                    ExpectKeyword(Keyword.FROM);
+                    withFromKeyword = true;
+
+                    from = ParseCommaSeparated(ParseTableAndJoins);
+                }
+            }
+        }
+        else
+        {
+            from = ParseCommaSeparated(ParseTableAndJoins);
+
+            if (_dialect is MsSqlDialect or GenericDialect)
+            {
+                output = ParseInit(ParseKeyword(Keyword.OUTPUT), () => ParseCommaSeparated(ParseSelectItem));
             }
         }
 
-        var from = ParseCommaSeparated(ParseTableAndJoins);
         var @using = ParseInit(ParseKeyword(Keyword.USING), ParseTableFactor);
 
         var selection = ParseInit(ParseKeyword(Keyword.WHERE), ParseExpr);
@@ -4419,7 +4456,7 @@ public partial class Parser
 
         FromTable fromTable = withFromKeyword ? new FromTable.WithFromKeyword(from) : new FromTable.WithoutKeyword(from);
 
-        return new Delete(new DeleteOperation(tables, fromTable, orderBy, @using, selection, returning, limit));
+        return new Delete(new DeleteOperation(tables, output, fromTable, orderBy, @using, selection, returning, limit));
     }
     /// <summary>
     /// KILL[CONNECTION | QUERY | MUTATION] processlist_id
@@ -4787,7 +4824,7 @@ public partial class Parser
 
                 return (windows, null, true);
             }
-            
+
             if (ParseKeyword(Keyword.QUALIFY))
             {
                 var qualifyExpr = ParseExpr();
@@ -6493,7 +6530,8 @@ public partial class Parser
         ExpectKeyword(Keyword.ON);
         var on = ParseExpr();
         var clauses = ParseMergeClauses();
-        return new Merge(into, table, source, on, clauses);
+        var output = _dialect is MsSqlDialect or GenericDialect ? ParseInit(ParseKeyword(Keyword.OUTPUT), () => ParseCommaSeparated(ParseSelectItem)) : null;
+        return new Merge(into, table, source, on, clauses, output);
     }
 
     public UtilityOption ParseUtilityOption()
