@@ -67,16 +67,11 @@ public class SqlFileAttribute : DataAttribute
     {
         if (testMethod == null) { throw new ArgumentNullException(nameof(testMethod)); }
 
-        // Get the absolute path to the JSON file
-        var path = Path.IsPathRooted(_filePath)
-            ? _filePath
-            : Path.GetRelativePath(Directory.GetCurrentDirectory(), _filePath);
-
-        if (!File.Exists(path))
+        if (!File.Exists(_filePath))
         {
-            throw new ArgumentException($"Could not find file at path: {path}");
+            throw new ArgumentException($"Could not find file at path: {_filePath}");
         }
 
-        return new List<object[]> { new object[] { File.ReadAllText(path) } };
+        return new List<object[]> { new object[] { File.ReadAllText(_filePath) } };
     }
 }

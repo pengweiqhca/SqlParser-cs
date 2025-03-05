@@ -4758,7 +4758,7 @@ public class ParserCommonTests : ParserTestBase
     {
         var keywords = Keywords.All;
 
-        var names = System.Enum.GetNames<Keyword>()
+        var names = System.Enum.GetNames(typeof(Keyword))
             .Where(n => n != nameof(Keyword.undefined))
             .ToArray();
 

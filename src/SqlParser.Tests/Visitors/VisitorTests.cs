@@ -26,9 +26,11 @@ namespace SqlParser.Tests.Visitors
                 Options = [],
                 Query = new Statement.Select(new Query(new SetExpression.SelectExpression(new Select([]))))
             };
-
+#if NETFRAMEWORK
+            var properties = ElementExtensions.GetVisitableChildProperties(cache);
+#else
             var properties = IElement.GetVisitableChildProperties(cache);
-
+#endif
             Assert.Equal(nameof(Statement.Cache.TableFlag), properties[0].Name);
             Assert.Equal(nameof(Statement.Cache.Name), properties[1].Name);
             Assert.Equal(nameof(Statement.Cache.Options), properties[2].Name);
@@ -147,7 +149,7 @@ namespace SqlParser.Tests.Visitors
             Visited.Add($"PRE: STATEMENT: {statement.ToSql()}");
             return ControlFlow.Continue;
         }
-       
+
         public override ControlFlow PostVisitStatement(Statement statement)
         {
             Elements.Add(statement);
@@ -161,7 +163,7 @@ namespace SqlParser.Tests.Visitors
             Visited.Add($"PRE: RELATION: {relation}");
             return ControlFlow.Continue;
         }
-        
+
         public override ControlFlow PostVisitRelation(ObjectName relation)
         {
             Elements.Add(relation);
@@ -174,7 +176,7 @@ namespace SqlParser.Tests.Visitors
             Visited.Add($"PRE: EXPR: {expression.ToSql()}");
             return ControlFlow.Continue;
         }
-        
+
         public override ControlFlow PostVisitExpression(Expression expression)
         {
             Elements.Add(expression);

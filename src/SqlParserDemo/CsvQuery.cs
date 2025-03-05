@@ -33,7 +33,7 @@ public class CsvQuery
 
     public void Select(string query)
     {
-        var ast = new Parser().ParseSql(query);
+        var ast = new Parser().ParseSql(query.AsSpan());
 
         var plan = BuildLogicalPlan(ast);
 
@@ -50,17 +50,17 @@ public class CsvQuery
         // Extract the name from the query
         var csvFile = select.From!.First().Relation!.AsTable().Name.ToString();
         // Find the CSV file in the build output directory
-        var path = Path.IsPathRooted(csvFile) ? csvFile : Path.GetRelativePath(Directory.GetCurrentDirectory(), csvFile);
-        
+        var path = csvFile;
+
         var text = File.ReadAllText(path);
         // Primitive CSV parsing; demo purposes only
-        var rows = text.Split("\r\n").Where(r => !string.IsNullOrEmpty(r)).ToList();
-        var header = rows[0].Split(",").ToList();
+        var rows = text.Split(["\r\n"], default).Where(r => !string.IsNullOrEmpty(r)).ToList();
+        var header = rows[0].Split([","], default).ToList();
 
         // Building a pseudo query plan; simplistic, demo purposes only.
         // Inform the plan about the headers (row 0) and the raw row values (rows 1+)
-        var plan = new CsvQueryPlan(rows[0].Split(",").ToList(), rows.Skip(1).ToList());
-        
+        var plan = new CsvQueryPlan(rows[0].Split([","], default).ToList(), rows.Skip(1).ToList());
+
         // Check what kind of query is executing.  Wildcard will select all
         // otherwise specific columns are being selected.
         if (select.Projection is [SelectItem.Wildcard])
@@ -83,7 +83,7 @@ public class CsvQuery
             var top = (TopQuantity.Constant)select.Top.Quantity!;
             plan.Top = (int)top.Quantity;
         }
-        
+
         return plan;
     }
 
@@ -116,7 +116,7 @@ public class CsvQuery
             // relevant to the output
             foreach (var row in Rows.Take(count))
             {
-                var cols = row.Split(",").ToList();
+                var cols = row.Split([","], default).ToList();
 
                 table.AddRow(ColumnIndices.Select(index => cols[index]).ToArray());
             }

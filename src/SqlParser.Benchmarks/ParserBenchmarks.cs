@@ -19,10 +19,10 @@ public class ParserBenchmarks
     }
 
     [Benchmark]
-    public Sequence<Statement> Parse() => new Parser().ParseSql(Sql, _options);
+    public Sequence<Statement> Parse() => new Parser().ParseSql(Sql.AsSpan(), _options);
 
     [Benchmark]
-    public string ToSql() => new Parser().ParseSql(Sql, _options).ToSql();
+    public string ToSql() => new Parser().ParseSql(Sql.AsSpan(), _options).ToSql();
 
     [Benchmark]
     public void PrefixParsingExceptionSuppression()
@@ -135,7 +135,7 @@ public class ParserBenchmarks
                              [t0].[Id0]
                     """;
 
-        var parsed = new Parser().ParseSql(query, new MsSqlDialect());
+        var parsed = new Parser().ParseSql(query.AsSpan(), new MsSqlDialect());
         Console.Write(parsed.ToSql());
     }
 
@@ -188,7 +188,7 @@ public class ParserBenchmarks
                              WHERE ps.LastBalanceMonth BETWEEN dc.LastMonthFormatted AND dc.CurrentDateFormatted
                              ORDER BY ps.ParticipantName;
                              """;
-        var parsed = new SqlQueryParser().Parse(query, new MsSqlDialect());
+        var parsed = new SqlQueryParser().Parse(query.AsSpan(), new MsSqlDialect());
         Console.Write(parsed.ToSql());
     }
 

@@ -415,7 +415,7 @@ public class ClickhouseDialectTests : ParserTestBase
 
         foreach (var clause in clauses)
         {
-            foreach (var (modifier, expectedModifier) in modifiers.Zip(expectedModifiers))
+            foreach (var (modifier, expectedModifier) in modifiers.Zip(expectedModifiers, (a, b) => (a, b)))
             {
                 var sql = $"SELECT * FROM T GROUP BY {clause} {modifier}";
 
@@ -428,7 +428,7 @@ public class ClickhouseDialectTests : ParserTestBase
                 }
                 else
                 {
-                    var columnNames = new Sequence<Expression>(clause.Split(", ").Select(c => new Expression.Identifier(c)));
+                    var columnNames = new Sequence<Expression>(clause.Split([", "], StringSplitOptions.None).Select(c => new Expression.Identifier(c)));
                     var expected = new GroupByExpression.Expressions(columnNames, expectedModifier);
                     Assert.Equal(expected, groupBy);
                 }
@@ -928,7 +928,7 @@ public class ClickhouseDialectTests : ParserTestBase
         Assert.Equal("t0", alter.Name);
         Assert.Single(alter.Operations);
         Assert.Equal(new AlterTableOperation.DropProjection(true, "my_name"), alter.Operations[0]);
-     
+
         VerifiedStatement<Statement.AlterTable>("ALTER TABLE t0 DROP PROJECTION my_name");
 
         Assert.Throws<ParserException>(() => ParseSqlStatements("ALTER TABLE t0 DROP PROJECTION"));

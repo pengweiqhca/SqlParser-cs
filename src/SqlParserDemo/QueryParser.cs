@@ -32,7 +32,7 @@ public class QueryParser
 
             try
             {
-                var statements = new Parser().ParseSql(_sql, new SQLiteDialect());
+                var statements = new Parser().ParseSql(_sql.AsSpan(), new SQLiteDialect());
                 var choices = new List<string> { "Default (AST)", "SQL", "JSON" };
                 var format = AnsiConsole.Prompt(new SelectionPrompt<string>()
                     .Title("[green]Format the output as[/]?")

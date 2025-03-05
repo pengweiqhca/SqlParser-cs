@@ -3,7 +3,7 @@
   <PropertyGroup>
       <RollForward>Major</RollForward>
 	  <LangVersion>12.0</LangVersion>
-	  <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
+      <TargetFrameworks>net8.0;net48</TargetFrameworks>
 	  <ImplicitUsings>enable</ImplicitUsings>
 	  <Nullable>enable</Nullable>
 	  <IsPackable>false</IsPackable>
@@ -19,6 +19,7 @@
     <PackageReference Include="FluentAssertions" Version="6.12.0" />
     <PackageReference Include="JetBrains.DotMemoryUnit" Version="3.2.20220510" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="xunit" Version="2.6.6" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.6">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
