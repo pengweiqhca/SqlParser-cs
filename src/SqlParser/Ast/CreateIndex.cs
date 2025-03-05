@@ -15,7 +15,11 @@ public record CreateIndex([property: Visit(0)] ObjectName? Name, [property: Visi
     public void ToSql(SqlTextWriter writer)
     {
         var unique = Unique ? "UNIQUE " : null;
+#if NETFRAMEWORK
+        var ifNot = IfNotExists ? $"{((IIfNotExists)this).IfNotExistsText()} " : null;
+#else
         var ifNot = IfNotExists ? $"{((IIfNotExists)this).IfNotExistsText} " : null;
+#endif
         var concurrently = Concurrently ? "CONCURRENTLY " : null;
 
         writer.WriteSql($"CREATE {unique}INDEX {concurrently}{ifNot}");

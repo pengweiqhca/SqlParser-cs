@@ -203,8 +203,12 @@ public abstract record Statement : IWriteSql, IElement
     {
         public override void ToSql(SqlTextWriter writer)
         {
-            var ifNot = IfNotExists ? $" {IIfNotExists.IfNotExistsPhrase} " : null;
-            var keyword = Database ? "DATABASE" : "";
+#if NETFRAMEWORK
+            var ifNot = IfNotExists ? $"{IIfNotExistsExtensions.IfNotExistsPhrase} " : null;
+#else
+            var ifNot = IfNotExists ? $"{IIfNotExists.IfNotExistsPhrase} " : null;
+#endif
+            var keyword = Database ? "DATABASE " : "";
             writer.WriteSql($"ATTACH {keyword}{ifNot}{DatabasePath}");
 
             if (DatabaseAlias != null)
@@ -225,7 +229,7 @@ public abstract record Statement : IWriteSql, IElement
     ///
     /// <example>
     /// <c>
-    /// CACHE [ FLAG ] TABLE table_name [ OPTIONS('K1' = 'V1', 'K2' = V2) ] [ AS ] [ query 
+    /// CACHE [ FLAG ] TABLE table_name [ OPTIONS('K1' = 'V1', 'K2' = V2) ] [ AS ] [ query
     /// </c>
     /// </example>
     /// </summary>
@@ -297,7 +301,7 @@ public abstract record Statement : IWriteSql, IElement
         }
     }
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="Name">Name</param>
     /// <param name="ObjectType">Comment object type</param>
@@ -332,7 +336,7 @@ public abstract record Statement : IWriteSql, IElement
     }
     /// <summary>
     /// Copy statement
-    /// 
+    ///
     /// </summary>
     /// <param name="Source">Source of the Coyp To</param>
     /// <param name="To">True if to</param>
@@ -489,7 +493,11 @@ public abstract record Statement : IWriteSql, IElement
             writer.Write("CREATE DATABASE");
             if (IfNotExists)
             {
+#if NETFRAMEWORK
+                writer.Write($" {AsIne.IfNotExistsText()}");
+#else
                 writer.Write($" {AsIne.IfNotExistsText}");
+#endif
             }
 
             writer.WriteSql($" {Name}");
@@ -518,8 +526,11 @@ public abstract record Statement : IWriteSql, IElement
     {
         public override void ToSql(SqlTextWriter writer)
         {
+#if NETFRAMEWORK
+            var ifNotExists = IfNotExists ? $"{IIfNotExistsExtensions.IfNotExistsPhrase} " : null;
+#else
             var ifNotExists = IfNotExists ? $"{IIfNotExists.IfNotExistsPhrase} " : null;
-
+#endif
             writer.WriteSql($"CREATE EXTENSION {ifNotExists}{Name}");
 
             if (Cascade || Schema != null || Version != null)
@@ -570,7 +581,11 @@ public abstract record Statement : IWriteSql, IElement
 
         public override void ToSql(SqlTextWriter writer)
         {
+#if NETFRAMEWORK
+            var ifNot = IfNotExists ? $"{AsIne.IfNotExistsText()} " : null;
+#else
             var ifNot = IfNotExists ? $"{AsIne.IfNotExistsText} " : null;
+#endif
             var or = OrReplace ? "OR REPLACE " : null;
             var temp = Temporary ? "TEMPORARY " : null;
 
@@ -778,8 +793,11 @@ public abstract record Statement : IWriteSql, IElement
                 var temp = Temporary.Value ? "TEMPORARY " : "PERSISTENT ";
                 writer.Write(temp);
             }
-
+#if NETFRAMEWORK
+            var ifNotExists = IfNotExists ? $" {IIfNotExistsExtensions.IfNotExistsPhrase}" : null;
+#else
             var ifNotExists = IfNotExists ? $" {IIfNotExists.IfNotExistsPhrase}" : null;
+#endif
             writer.WriteSql($"SECRET{ifNotExists} ");
 
             if (Name != null)
@@ -803,7 +821,7 @@ public abstract record Statement : IWriteSql, IElement
     /// <summary>
     /// Create stage statement
     /// <remarks>
-    ///  <see href="https://docs.snowflake.com/en/sql-reference/sql/create-stage"/> 
+    ///  <see href="https://docs.snowflake.com/en/sql-reference/sql/create-stage"/>
     /// </remarks>
     /// </summary>
     public record CreateStage([property: Visit(0)] ObjectName Name, [property: Visit(1)] StageParams StageParams) : Statement, IIfNotExists
@@ -821,8 +839,11 @@ public abstract record Statement : IWriteSql, IElement
         {
             var orReplace = OrReplace ? "OR REPLACE " : null;
             var temp = Temporary ? "TEMPORARY " : null;
+#if NETFRAMEWORK
+            var ifNot = IfNotExists ? $"{AsIne.IfNotExistsText()} " : null;
+#else
             var ifNot = IfNotExists ? $"{AsIne.IfNotExistsText} " : null;
-
+#endif
             writer.WriteSql($"CREATE {orReplace}{temp}STAGE {ifNot}{Name}{StageParams}");
 
             if (DirectoryTableParams.SafeAny())
@@ -941,7 +962,11 @@ public abstract record Statement : IWriteSql, IElement
             var orReplace = OrReplace ? "OR REPLACE " : null;
             var materialized = Materialized ? "MATERIALIZED " : null;
             var temporary = Temporary ? "TEMPORARY " : null;
+#if NETFRAMEWORK
+            var ifNotExists = IfNotExists ? $"{IIfNotExistsExtensions.IfNotExistsPhrase} " : null;
+#else
             var ifNotExists = IfNotExists ? $"{IIfNotExists.IfNotExistsPhrase} " : null;
+#endif
             var to = To != null ? $" TO {To.ToSql()}" : null;
 
             writer.WriteSql($"CREATE {orReplace}{materialized}{temporary}VIEW {ifNotExists}{Name}{to}");
@@ -992,7 +1017,11 @@ public abstract record Statement : IWriteSql, IElement
 
         public override void ToSql(SqlTextWriter writer)
         {
+#if NETFRAMEWORK
+            var ifNot = IfNotExists ? $"{AsIne.IfNotExistsText()} " : null;
+#else
             var ifNot = IfNotExists ? $"{AsIne.IfNotExistsText} " : null;
+#endif
             writer.WriteSql($"CREATE VIRTUAL TABLE {ifNot}{Name} USING {ModuleName}");
 
             if (ModuleArgs.SafeAny())
@@ -1036,7 +1065,11 @@ public abstract record Statement : IWriteSql, IElement
             var login = Login.HasValue ? Login.Value ? " LOGIN" : " NOLOGIN" : null;
             var replication = Replication.HasValue ? Replication.Value ? " REPLICATION" : " NOREPLICATION" : null;
             var bypassrls = BypassRls.HasValue ? BypassRls.Value ? " BYPASSRLS" : " NOBYPASSRLS" : null;
+#if NETFRAMEWORK
+            var ifNot = IfNotExists ? $"{AsIne.IfNotExistsText()} " : null;
+#else
             var ifNot = IfNotExists ? $"{AsIne.IfNotExistsText} " : null;
+#endif
             writer.WriteSql($"CREATE ROLE {ifNot}{Names}{superuser}{createDb}{createRole}{inherit}{login}{replication}{bypassrls}");
 
             if (ConnectionLimit != null)
@@ -1107,7 +1140,11 @@ public abstract record Statement : IWriteSql, IElement
     {
         public override void ToSql(SqlTextWriter writer)
         {
+#if NETFRAMEWORK
+            var ifNot = IfNotExists ? $"{AsIne.IfNotExistsText()} " : null;
+#else
             var ifNot = IfNotExists ? $"{AsIne.IfNotExistsText} " : null;
+#endif
             writer.WriteSql($"CREATE SCHEMA {ifNot}{Name}");
         }
     }
@@ -1132,7 +1169,11 @@ public abstract record Statement : IWriteSql, IElement
         {
             var asType = DataType != null ? $" AS {DataType.ToSql()}" : null;
             var temp = Temporary ? "TEMPORARY " : null;
+#if NETFRAMEWORK
+            var ifNot = IfNotExists ? $"{AsIne.IfNotExistsText()} " : null;
+#else
             var ifNot = IfNotExists ? $"{AsIne.IfNotExistsText} " : null;
+#endif
             writer.Write($"CREATE {temp}SEQUENCE {ifNot}{Name}{asType}");
 
             if (SequenceOptions != null)
@@ -1266,7 +1307,11 @@ public abstract record Statement : IWriteSql, IElement
     {
         public override void ToSql(SqlTextWriter writer)
         {
+#if NETFRAMEWORK
+            var ifNot = IfExists ? $" {IIfNotExistsExtensions.IfExistsPhrase}" : null;
+#else
             var ifNot = IfExists ? $" {IIfNotExists.IfExistsPhrase}" : null;
+#endif
             var keyword = Database ? " DATABASE" : "";
 
             writer.WriteSql($"DETACH{keyword}{ifNot} {DatabaseAlias}");
@@ -1307,8 +1352,11 @@ public abstract record Statement : IWriteSql, IElement
                 var temp = Temporary.Value ? "TEMPORARY " : "PERSISTENT ";
                 writer.Write(temp);
             }
-
+#if NETFRAMEWORK
+            var ifNotExists = IfExists ? $" {IIfNotExistsExtensions.IfExistsPhrase}" : null;
+#else
             var ifNotExists = IfExists ? $" {IIfNotExists.IfExistsPhrase}" : null;
+#endif
             writer.WriteSql($"SECRET{ifNotExists} {Name}");
 
             if (StorageSpecifier != null)
@@ -1996,7 +2044,7 @@ public abstract record Statement : IWriteSql, IElement
     }
     /// <summary>
     /// SET NAMES 'charset_name' [COLLATE 'collation_name']
-    /// 
+    ///
     /// Note: this is a MySQL-specific statement.
     /// </summary>
     /// <param name="CharsetName">Character set name</param>
@@ -2145,7 +2193,7 @@ public abstract record Statement : IWriteSql, IElement
     }
     /// <summary>
     /// SHOW COLUMNS
-    /// 
+    ///
     /// Note: this is a MySQL-specific statement.
     /// </summary>
     /// <param name="Extended">True if extended</param>

@@ -49,7 +49,7 @@ public record CreateTable([property: Visit(0)] ObjectName Name, [property: Visit
     public ObjectName? WithAggregationPolicy { get; init; }
     public RowAccessPolicy? WithRowAccessPolicy { get; init; }
     public Sequence<Tag>? WithTags { get; init; }
-    
+
     public void ToSql(SqlTextWriter writer)
     {
         var orReplace = OrReplace ? "OR REPLACE " : null;
@@ -57,7 +57,11 @@ public record CreateTable([property: Visit(0)] ObjectName Name, [property: Visit
         var global = Global.HasValue ? Global.Value ? "GLOBAL " : "LOCAL " : null;
         var temp = Temporary ? "TEMPORARY " : null;
         var transient = Transient ? "TRANSIENT " : null;
+#if NETFRAMEWORK
+        var ifNot = IfNotExists ? $"{((IIfNotExists)this).IfNotExistsText()} " : null;
+#else
         var ifNot = IfNotExists ? $"{((IIfNotExists)this).IfNotExistsText} " : null;
+#endif
         var isVolatile = Volatile ? "VOLATILE " : null;
 
         writer.WriteSql($"CREATE {orReplace}{external}{global}{temp}{transient}{isVolatile}TABLE {ifNot}{Name}");

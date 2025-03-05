@@ -50,7 +50,11 @@ public abstract record AlterTableOperation : IWriteSql
 
             if (IfNotExists)
             {
+#if NETFRAMEWORK
+                writer.Write($" {IIfNotExistsExtensions.IfNotExistsPhrase}");
+#else
                 writer.Write($" {IIfNotExists.IfNotExistsPhrase}");
+#endif
             }
 
             writer.WriteSql($" {ColumnDef}");
@@ -75,8 +79,11 @@ public abstract record AlterTableOperation : IWriteSql
     {
         public override void ToSql(SqlTextWriter writer)
         {
+#if NETFRAMEWORK
+            var ifNot = IfNotExists ? $" {IIfNotExistsExtensions.IfNotExistsPhrase}" : null;
+#else
             var ifNot = IfNotExists ? $" {IIfNotExists.IfNotExistsPhrase}" : null;
-
+#endif
             writer.WriteSql($"ADD{ifNot} {NewPartitions.ToSqlDelimited(Symbols.Space)}");
         }
     }
@@ -94,7 +101,11 @@ public abstract record AlterTableOperation : IWriteSql
 
             if (IfNotExists)
             {
+#if NETFRAMEWORK
+                writer.Write($" {IIfNotExistsExtensions.IfNotExistsPhrase}");
+#else
                 writer.Write($" {IIfNotExists.IfNotExistsPhrase}");
+#endif
             }
 
             writer.WriteSql($" {Name} ({Select})");
@@ -243,7 +254,7 @@ public abstract record AlterTableOperation : IWriteSql
     }
     /// <summary>
     /// Drop primary key table operation
-    /// 
+    ///
     /// Note: this is a MySQL-specific operation.
     /// <example>
     /// <c>
@@ -536,7 +547,7 @@ public abstract record AlterTableOperation : IWriteSql
         }
     }
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="Name"></param>
     public record SwapWith(ObjectName Name) : AlterTableOperation

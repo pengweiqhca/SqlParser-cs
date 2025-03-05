@@ -372,12 +372,12 @@ public partial class Parser
             return keyword;
         }
 
-        var expected = string.Join(',', keywords);
+        var expected = string.Join(",", keywords);
         throw Expected($"one of the keywords {expected}");
     }
 
     /// <summary>
-    ///  Consume the next token to check for a matching type.  
+    ///  Consume the next token to check for a matching type.
     /// </summary>
     /// <typeparam name="T">Expected token type</typeparam>
     /// <returns>True if it matches the expected token; otherwise false</returns>
@@ -438,7 +438,7 @@ public partial class Parser
 
     /// <summary>
     /// Run a parser method reverting back to the current position if unsuccessful.
-    /// 
+    ///
     /// </summary>
     /// <param name="action">Expression to parse</param>
     /// <param name="nullReset">Reset the parser index if a null value is encountered</param>
@@ -498,7 +498,7 @@ public partial class Parser
     /// the return value is false.  This allows for control flow after the method
     /// call where Rust uses a macro to handle control flow.  C# cannot return from
     /// the surrounding method from within a helper.
-    /// 
+    ///
     /// Rust has other control flow features this project would benefit from.  In
     /// particular, Rust can break out of a nested context (loop, match, etc.) to a
     /// specified outer context by label name.  There are areas in this project that
@@ -550,7 +550,7 @@ public partial class Parser
     public Expression ParseExpr()
     {
         return ParseSubExpression(_dialect.PrecedenceUnknown);
-    } 
+    }
     /// <summary>
     /// Parse tokens until the precedence changes
     /// </summary>
@@ -764,9 +764,9 @@ public partial class Parser
                         if (regexp || rlike)
                         {
                             return new RLike(
-                                negated, 
-                                expr, 
-                                ParseSubExpression(_dialect.GetPrecedence(Precedence.Like)), 
+                                negated,
+                                expr,
+                                ParseSubExpression(_dialect.GetPrecedence(Precedence.Like)),
                                 regexp);
                         }
 
@@ -799,8 +799,8 @@ public partial class Parser
                         if (ParseKeywordSequence(Keyword.SIMILAR, Keyword.TO))
                         {
                             return new SimilarTo(
-                                expr, 
-                                negated, 
+                                expr,
+                                negated,
                                 ParseSubExpression(_dialect.GetPrecedence(Precedence.Like)),
                                 ParseEscapeChar());
                         }
@@ -1042,10 +1042,10 @@ public partial class Parser
             switch (token)
             {
                 case Word w when Keywords.ReservedForColumnAlias.Contains(w.Keyword):
-                case RightParen 
-                    or SemiColon 
-                    or EOF 
-                    or RightBracket 
+                case RightParen
+                    or SemiColon
+                    or EOF
+                    or RightBracket
                     or RightBrace:
                     return true;
             }
@@ -1120,7 +1120,7 @@ public partial class Parser
             }
 
             var settings = ParseSettings();
-           
+
             if (ParseKeyword(Keyword.FETCH))
             {
                 fetch = ParseFetch();

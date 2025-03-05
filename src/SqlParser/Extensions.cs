@@ -158,7 +158,7 @@ public static class Extensions
         }
 
         var previousChar = char.MinValue;
-        var state = new State(value);
+        var state = new State(value.AsSpan());
         char current;
         List<char> word = [];
 
@@ -236,7 +236,11 @@ public static class Extensions
 
                 default:
                 {
+#if NETFRAMEWORK
+                    if (ch <= '\x007f')
+#else
                     if (char.IsAscii(ch))
+#endif
                     {
                         builder.Append(ch);
                     }

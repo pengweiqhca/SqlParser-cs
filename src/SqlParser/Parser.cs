@@ -3638,7 +3638,7 @@ public partial class Parser
     public static Value.Number ParseNumeric(Number number)
     {
         var value = number.Value;
-#if NET6_0
+#if NETFRAMEWORK
         var parsed = double.TryParse(value, out _);
 #else
         var parsed = double.TryParse(value, CultureInfo.InvariantCulture, out _);

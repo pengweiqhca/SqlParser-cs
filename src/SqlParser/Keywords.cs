@@ -17,7 +17,7 @@ internal static class Keywords
         {
             {"END_EXEC", "END-EXEC"}
         };
-        var keywords = Enum.GetNames<Keyword>()
+        var keywords = Enum.GetNames(typeof(Keyword))
                 .Where(n => n != nameof(Keyword.undefined))
                 .ToArray();
 
@@ -634,7 +634,7 @@ public enum Keyword
     POSITION,
     POSITION_REGEX,
     POWER,
-    PRAGMA, 
+    PRAGMA,
     PRECEDES,
     PRECEDING,
     PRECISION,
@@ -822,7 +822,7 @@ public enum Keyword
     TRUE,
     TRUNCATE,
     TRY_CAST,
-    TRY_CONVERT, 
+    TRY_CONVERT,
     TUPLE,
     TYPE,
     UESCAPE,

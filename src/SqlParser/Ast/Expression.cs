@@ -7,9 +7,17 @@ public abstract record Expression : IWriteSql, IElement
     public interface INegated
     {
         bool Negated { get; init; }
+#if NETFRAMEWORK
+    }
 
+    public static class NegatedHelper
+    {
+        public static string? NegatedText(INegated target) => target.Negated ? "NOT " : null;
+    }
+#else
         string? NegatedText => Negated ? "NOT " : null;
     }
+#endif
     /// <summary>
     /// ALL operation e.g. `1 ALL (1)` or `foo > ALL(bar)`, It will be wrapped on the right side of BinaryExpr
     /// </summary>
@@ -81,7 +89,11 @@ public abstract record Expression : IWriteSql, IElement
     {
         public override void ToSql(SqlTextWriter writer)
         {
+#if NETFRAMEWORK
+            writer.WriteSql($"{Expression} {NegatedHelper.NegatedText(AsNegated)}BETWEEN {Low} AND {High}");
+#else
             writer.WriteSql($"{Expression} {AsNegated.NegatedText}BETWEEN {Low} AND {High}");
+#endif
         }
     }
     /// <summary>
@@ -148,9 +160,9 @@ public abstract record Expression : IWriteSql, IElement
             if (ReferenceEquals(this, other)){ return true; }
 
             return base.Equals(other) &&
-                   Equals(PgOptions, other.PgOptions) && 
-                   Left.Equals(other.Left) && 
-                   Op == other.Op && 
+                   Equals(PgOptions, other.PgOptions) &&
+                   Left.Equals(other.Left) &&
+                   Op == other.Op &&
                    Right.Equals(other.Right);
         }
 
@@ -217,7 +229,7 @@ public abstract record Expression : IWriteSql, IElement
                 CastKind.TryCast => "TRY_CAST",
                 CastKind.SafeCast => "SAFE_CAST"
             };
-          
+
             if (Format != null)
             {
                 writer.WriteSql($"{kind}({Expression} as {DataType} FORMAT {Format})");
@@ -243,11 +255,11 @@ public abstract record Expression : IWriteSql, IElement
                 case CeilFloorKind.DateTimeFieldKind { Field: DateTimeField.NoDateTime }:
                     writer.WriteSql($"CEIL({Expression})");
                     break;
-             
+
                 case CeilFloorKind.DateTimeFieldKind dt:
                     writer.WriteSql($"CEIL({Expression} TO {dt.Field})");
                     break;
-               
+
                 case CeilFloorKind.Scale s:
                     writer.WriteSql($"CEIL({Expression}, {s.Field})");
                     break;
@@ -272,7 +284,7 @@ public abstract record Expression : IWriteSql, IElement
         }
     }
     /// <summary>
-    /// Multi-part identifier, e.g. 
+    /// Multi-part identifier, e.g.
     /// <example>
     /// <c>
     /// table_alias.column or schema.table.col
@@ -309,8 +321,8 @@ public abstract record Expression : IWriteSql, IElement
     /// </summary>
     public record Convert(
         Expression Expression,
-        DataType? DataType, 
-        ObjectName? CharacterSet, 
+        DataType? DataType,
+        ObjectName? CharacterSet,
         bool TargetBeforeValue,
         Sequence<Expression> Styles,
         bool IsTry = false) : Expression
@@ -408,7 +420,11 @@ public abstract record Expression : IWriteSql, IElement
     {
         public override void ToSql(SqlTextWriter writer)
         {
+#if NETFRAMEWORK
+            writer.WriteSql($"{NegatedHelper.NegatedText(AsNegated)}EXISTS ({SubQuery})");
+#else
             writer.WriteSql($"{AsNegated.NegatedText}EXISTS ({SubQuery})");
+#endif
         }
     }
     /// <summary>
@@ -575,12 +591,22 @@ public abstract record Expression : IWriteSql, IElement
 
         public ILike(Expression? expression, bool negated, Expression pattern, bool Any = false)
             : this(expression, negated, pattern, (string?)null, Any) { }
-        
+
         public override void ToSql(SqlTextWriter writer)
         {
             var any = Any ? "ANY " : string.Empty;
-            
+
             // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
+#if NETFRAMEWORK
+            if (EscapeChar != null)
+            {
+                writer.WriteSql($"{Expression} {NegatedHelper.NegatedText(AsNegated)}ILIKE {any}{Pattern} ESCAPE '{EscapeChar}'");
+            }
+            else
+            {
+                writer.WriteSql($"{Expression} {NegatedHelper.NegatedText(AsNegated)}ILIKE {any}{Pattern}");
+            }
+#else
             if (EscapeChar != null)
             {
                 writer.WriteSql($"{Expression} {AsNegated.NegatedText}ILIKE {any}{Pattern} ESCAPE '{EscapeChar}'");
@@ -589,6 +615,7 @@ public abstract record Expression : IWriteSql, IElement
             {
                 writer.WriteSql($"{Expression} {AsNegated.NegatedText}ILIKE {any}{Pattern}");
             }
+#endif
         }
     }
     /// <summary>
@@ -603,7 +630,11 @@ public abstract record Expression : IWriteSql, IElement
     {
         public override void ToSql(SqlTextWriter writer)
         {
+#if NETFRAMEWORK
+            writer.WriteSql($"{Expression} {NegatedHelper.NegatedText(AsNegated)}IN ({List})");
+#else
             writer.WriteSql($"{Expression} {AsNegated.NegatedText}IN ({List})");
+#endif
         }
     }
     /// <summary>
@@ -618,7 +649,11 @@ public abstract record Expression : IWriteSql, IElement
     {
         public override void ToSql(SqlTextWriter writer)
         {
+#if NETFRAMEWORK
+            writer.WriteSql($"{Expression} {NegatedHelper.NegatedText(AsNegated)}IN ({SubQuery})");
+#else
             writer.WriteSql($"{Expression} {AsNegated.NegatedText}IN ({SubQuery})");
+#endif
         }
     }
     /// <summary>
@@ -647,7 +682,7 @@ public abstract record Expression : IWriteSql, IElement
             LeadingField = leadingField ?? new DateTimeField.None();
             LastField = lastField ?? new DateTimeField.None();
         }
-        
+
         public Expression Value { get; }
         public DateTimeField LeadingField { get; }
         public DateTimeField LastField { get; }
@@ -694,7 +729,7 @@ public abstract record Expression : IWriteSql, IElement
     }
     /// <summary>
     /// Introduced string
-    /// 
+    ///
     /// <see href="https://dev.mysql.com/doc/refman/8.0/en/charset-introducer.html"/>
     /// </summary>
     public record IntroducedString(string Introducer, Value Value) : Expression
@@ -716,7 +751,11 @@ public abstract record Expression : IWriteSql, IElement
     {
         public override void ToSql(SqlTextWriter writer)
         {
+#if NETFRAMEWORK
+            writer.WriteSql($"{Expression} {NegatedHelper.NegatedText(AsNegated)}IN UNNEST({ArrayExpression})");
+#else
             writer.WriteSql($"{Expression} {AsNegated.NegatedText}IN UNNEST({ArrayExpression})");
+#endif
         }
     }
     /// <summary>
@@ -876,6 +915,16 @@ public abstract record Expression : IWriteSql, IElement
             var any = Any ? "ANY " : string.Empty;
 
             // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
+#if NETFRAMEWORK
+            if (EscapeChar != null)
+            {
+                writer.WriteSql($"{Expression} {NegatedHelper.NegatedText(AsNegated)}LIKE {any}{Pattern} ESCAPE '{EscapeChar}'");
+            }
+            else
+            {
+                writer.WriteSql($"{Expression} {NegatedHelper.NegatedText(AsNegated)}LIKE {any}{Pattern}");
+            }
+#else
             if (EscapeChar != null)
             {
                 writer.WriteSql($"{Expression} {AsNegated.NegatedText}LIKE {any}{Pattern} ESCAPE '{EscapeChar}'");
@@ -884,6 +933,7 @@ public abstract record Expression : IWriteSql, IElement
             {
                 writer.WriteSql($"{Expression} {AsNegated.NegatedText}LIKE {any}{Pattern}");
             }
+#endif
         }
     }
     /// <summary>
@@ -906,7 +956,7 @@ public abstract record Expression : IWriteSql, IElement
         }
     }
     /// Access a map-like object by field
-    /// 
+    ///
     /// Note that depending on the dialect, struct like accesses may be
     /// parsed as [ArrayIndex](Self::ArrayIndex) or `MapAcces`](Self::MapAccess)
     ///
@@ -1151,6 +1201,16 @@ public abstract record Expression : IWriteSql, IElement
         public override void ToSql(SqlTextWriter writer)
         {
             // ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
+#if NETFRAMEWORK
+            if (EscapeChar != null)
+            {
+                writer.WriteSql($"{Expression} {NegatedHelper.NegatedText(AsNegated)}SIMILAR TO {Pattern} ESCAPE '{EscapeChar}'");
+            }
+            else
+            {
+                writer.WriteSql($"{Expression} {NegatedHelper.NegatedText(AsNegated)}SIMILAR TO {Pattern}");
+            }
+#else
             if (EscapeChar != null)
             {
                 writer.WriteSql($"{Expression} {AsNegated.NegatedText}SIMILAR TO {Pattern} ESCAPE '{EscapeChar}'");
@@ -1159,6 +1219,7 @@ public abstract record Expression : IWriteSql, IElement
             {
                 writer.WriteSql($"{Expression} {AsNegated.NegatedText}SIMILAR TO {Pattern}");
             }
+#endif
         }
     }
     /// <summary>

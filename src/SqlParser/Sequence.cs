@@ -7,7 +7,11 @@ namespace SqlParser;
 /// instead of referential equality
 /// </summary>
 /// <typeparam name="T">The type of element in the sequence</typeparam>
+#if NETFRAMEWORK
+public class Sequence<T> : List<T>, IWriteSql, IElementVisit
+#else
 public class Sequence<T> : List<T>, IWriteSql, IElement
+#endif
 {
     public Sequence()
     {
@@ -19,7 +23,7 @@ public class Sequence<T> : List<T>, IWriteSql, IElement
 
     /// <summary>
     /// Convenience method to forward the ToString output of the child
-    /// elements instead of writing the Reflection-based name of the 
+    /// elements instead of writing the Reflection-based name of the
     /// genetic list type
     /// </summary>
     /// <returns>String-based display of the sequence elements</returns>

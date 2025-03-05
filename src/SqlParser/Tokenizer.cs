@@ -286,8 +286,7 @@ public ref struct Tokenizer(bool unescape = true)
             return new Word(new string(TokenizeWord(first)), null);
         }
 
-        var hex = TokenizeSingleQuotedString(Symbols.SingleQuote, true);
-        return new HexStringLiteral(new string(hex));
+        return new HexStringLiteral(TokenizeSingleQuotedString(Symbols.SingleQuote, true));
 
     }
 
@@ -494,7 +493,7 @@ public ref struct Tokenizer(bool unescape = true)
             {
                 for (var i = 0; i < exponent.Count; i++)
                 {
-                    // advance the original state to the location where the exponent 
+                    // advance the original state to the location where the exponent
                     // notation ends and the numeric values continue
                     _state.Next();
                 }

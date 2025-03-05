@@ -979,7 +979,11 @@ public partial class Parser
         while (true)
         {
             var name = ParseIdentifier();
+#if NETFRAMEWORK
+            if (name.Value.Length == 0|| name.Value[0] != Symbols.At)
+#else
             if (!name.Value.StartsWith(Symbols.At))
+#endif
             {
                 throw Expected("Invalid MsSql variable declaration", PeekToken());
             }

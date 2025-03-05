@@ -7,12 +7,28 @@ public enum ControlFlow
     Continue,
     Break
 }
+#if NETFRAMEWORK
+public interface IElement;
 
+public interface IElementVisit : IElement
+{
+    ControlFlow Visit(Visitor visitor);
+}
+
+public static class ElementExtensions
+{
+    public static ControlFlow Visit(this IElement element, Visitor visitor)
+    {
+        if (element is IElementVisit visit) return visit.Visit(visitor);
+
+#else
 public interface IElement
 {
     public ControlFlow Visit(Visitor visitor)
     {
-        switch (this)
+        var element = this;
+#endif
+        switch (element)
         {
             case TableFactor t:
             {
@@ -21,7 +37,7 @@ public interface IElement
                 if (t is TableFactor.Table table)
                 {
                     visitor.PreVisitRelation(table.Name);
-                    VisitChildren(this, visitor);
+                    VisitChildren(element, visitor);
                     visitor.PostVisitRelation(table.Name);
                 }
 
@@ -37,7 +53,7 @@ public interface IElement
                     {
                         return flow;
                     }
-                    VisitChildren(this, visitor);
+                    VisitChildren(element, visitor);
                     return visitor.PostVisitExpression(e);
                 }
 
@@ -49,12 +65,12 @@ public interface IElement
                         return flow;
                     }
 
-                    VisitChildren(this, visitor);
+                    VisitChildren(element, visitor);
                     return visitor.PostVisitStatement(s);
                 }
 
             default:
-                VisitChildren(this, visitor);
+                VisitChildren(element, visitor);
                 return ControlFlow.Continue;
         }
     }
@@ -105,7 +121,7 @@ public interface IElement
             return decorated;
         }
 
-        // Although identified as properties, primary constructor parameters 
+        // Although identified as properties, primary constructor parameters
         // use parameter attributes, not property attributes and must be identified
         // apart from the property list. This find their order and inserts
         // the missing properties into the decorated property list.
@@ -143,7 +159,7 @@ public abstract class Visitor
     {
         return ControlFlow.Continue;
     }
-   
+
     public virtual ControlFlow PostVisitQuery(Query query)
     {
         return ControlFlow.Continue;
