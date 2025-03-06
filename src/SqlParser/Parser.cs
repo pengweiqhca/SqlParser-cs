@@ -3527,7 +3527,7 @@ public partial class Parser
     /// </summary>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    public Value ParseValue()
+    public Value ParseValue(bool isFetch = false)
     {
         var token = NextToken();
 
@@ -3541,6 +3541,7 @@ public partial class Parser
                     Keyword.NULL => new Value.Null(),
                     Keyword.undefined when w.QuoteStyle == Symbols.DoubleQuote => new Value.DoubleQuotedString(w.Value),
                     Keyword.undefined when w.QuoteStyle == Symbols.SingleQuote => new Value.SingleQuotedString(w.Value),
+                    Keyword.undefined when w.QuoteStyle == null && isFetch => new Value.Placeholder(w.Value),
                     Keyword.undefined when w.QuoteStyle != null => throw Expected("a value", PeekToken()),
 
                     //// Case when Snowflake Semi-structured data like key:value
@@ -6415,7 +6416,7 @@ public partial class Parser
         var quantity = ParseInit<Expression>(ParseOneOfKeywords(Keyword.ROW, Keyword.ROWS) == Keyword.undefined,
             () =>
             {
-                var value = new LiteralValue(ParseValue());
+                var value = new LiteralValue(ParseValue(true));
                 percent = ParseKeyword(Keyword.PERCENT);
                 ExpectOneOfKeywords(Keyword.ROW, Keyword.ROWS);
 

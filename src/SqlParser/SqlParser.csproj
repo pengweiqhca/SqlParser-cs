@@ -25,7 +25,7 @@
 		<AssemblyOriginatorKeyFile>sqlparser.snk</AssemblyOriginatorKeyFile>
 		<EmbedUntrackedSources>true</EmbedUntrackedSources>
         <DebugType>embedded</DebugType>
-		<Version>0.5.1.1</Version>
+		<Version>0.6.3.1</Version>
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<PackageReadmeFile>README.md</PackageReadmeFile>

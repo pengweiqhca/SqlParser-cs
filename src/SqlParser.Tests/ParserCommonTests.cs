@@ -4039,6 +4039,9 @@ public class ParserCommonTests : ParserTestBase
         expected = new Offset(new LiteralValue(Number("1")), OffsetRows.None);
         query = VerifiedQuery("SELECT 'foo' OFFSET 1");
         Assert.Equal(expected, query.Offset);
+
+        query = VerifiedQuery("SELECT foo FROM bar OFFSET @0 ROWS");
+        Assert.Equal(new Offset(new LiteralValue(new Value.Placeholder("@0")), OffsetRows.Rows), query.Offset);
     }
 
     [Fact]
