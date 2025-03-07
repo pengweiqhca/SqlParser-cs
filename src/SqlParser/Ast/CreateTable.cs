@@ -64,7 +64,8 @@ public record CreateTable([property: Visit(0)] ObjectName Name, [property: Visit
 #endif
         var isVolatile = Volatile ? "VOLATILE " : null;
 
-        writer.WriteSql($"CREATE {orReplace}{external}{global}{temp}{transient}{isVolatile}TABLE {ifNot}{Name}");
+        if (Name.Values.Count > 0)
+            writer.WriteSql($"CREATE {orReplace}{external}{global}{temp}{transient}{isVolatile}TABLE {ifNot}{Name}");
 
         if (OnCluster != null)
         {

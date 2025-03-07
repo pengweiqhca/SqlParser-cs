@@ -1935,11 +1935,11 @@ public partial class Parser
         return new HiveRowFormat.Delimited(rowDelimiters);
     }
 
-    public Ast.CreateTable ParseCreateTable(bool orReplace, bool temporary, bool? global, bool transient)
+    public Ast.CreateTable ParseCreateTable(bool orReplace, bool temporary, bool? global, bool transient, bool parseObjectName = true)
     {
         var allowUnquotedHyphen = _dialect is BigQueryDialect;
         var ifNotExists = ParseIfNotExists();
-        var tableName = ParseObjectName(allowUnquotedHyphen);
+        var tableName = parseObjectName ? ParseObjectName(allowUnquotedHyphen) : new ObjectName([]);
 
         var onCluster = ParseOptionalOnCluster();
 
@@ -3769,6 +3769,7 @@ public partial class Parser
 
             Word { Keyword: Keyword.TUPLE } when _dialect is ClickHouseDialect or GenericDialect => ParseClickhouseTuple(),
             Word { Keyword: Keyword.TRIGGER } => new DataType.Trigger(),
+            Word { Keyword: Keyword.TABLE } => new DataType.Table(ParseCreateTable(false, false, null, false, false)),
             _ => ParseUnmatched()
         };
 

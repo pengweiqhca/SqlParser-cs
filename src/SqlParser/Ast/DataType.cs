@@ -145,7 +145,7 @@ public abstract record DataType : IWriteSql, IElement
     }
     /// <summary>
     /// Large binary object with optional length e.g. BLOB, BLOB(1000)
-    /// 
+    ///
     /// <see href="https://jakewheat.github.io/sql-overview/sql-2016-foundation-grammar.html#binary-large-object-string-type"/>
     /// <see href="https://docs.oracle.com/javadb/10.8.3.0/ref/rrefblob.html"/>
     /// </summary>
@@ -321,7 +321,7 @@ public abstract record DataType : IWriteSql, IElement
     }
     /// <summary>
     /// Datetime with optional time precision e.g. MySQL
-    /// 
+    ///
     /// <see href="https://dev.mysql.com/doc/refman/8.0/en/datetime.html"/>
     /// </summary>
     public record Datetime(ulong? Length = null) : LengthDataType(Length)
@@ -397,7 +397,7 @@ public abstract record DataType : IWriteSql, IElement
         }
     }
     /// <summary>
-    /// Enum data types 
+    /// Enum data types
     /// </summary>
     /// <param name="Values"></param>
     public record Enum(Sequence<string> Values) : DataType
@@ -690,7 +690,7 @@ public abstract record DataType : IWriteSql, IElement
         }
     }
     /// <summary>
-    /// Numeric type with optional precision and scale e.g. NUMERIC(10,2) 
+    /// Numeric type with optional precision and scale e.g. NUMERIC(10,2)
     ///
     /// <see href="https://jakewheat.github.io/sql-overview/sql-2016-foundation-grammar.html#exact-numeric-type"/>
     /// </summary>
@@ -850,6 +850,17 @@ public abstract record DataType : IWriteSql, IElement
         public override void ToSql(SqlTextWriter writer)
         {
             writer.Write("TRIGGER");
+        }
+    }
+    /// <summary>
+    /// Table data type, returned by functions associated with triggers
+    /// </summary>
+    public record Table(CreateTable CreateTable) : DataType
+    {
+        public override void ToSql(SqlTextWriter writer)
+        {
+            writer.Write("TABLE");
+            CreateTable.ToSql(writer);
         }
     }
     /// <summary>

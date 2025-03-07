@@ -1018,10 +1018,12 @@ public partial class Parser
 
             statements.Add(new Declare([name], dataType, assignment, declareType));
 
-            if (NextToken() is not Comma)
+            if (PeekToken() is not Comma)
             {
                 break;
             }
+
+            NextToken();
         }
 
         return new Statement.Declare(statements);
