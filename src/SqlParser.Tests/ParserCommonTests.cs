@@ -7,6 +7,7 @@ using Action = SqlParser.Ast.Action;
 using DataType = SqlParser.Ast.DataType;
 using Map = SqlParser.Ast.Map;
 using Subscript = SqlParser.Ast.Subscript;
+using Table = SqlParser.Ast.Table;
 
 // ReSharper disable StringLiteralTypo
 // ReSharper disable CommentTypo
