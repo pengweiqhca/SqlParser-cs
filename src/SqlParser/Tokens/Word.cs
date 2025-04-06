@@ -29,13 +29,11 @@ public class Word : StringToken
             return;
         }
 
-        var index = Array.IndexOf(Keywords.All, value.ToUpperInvariant());
-
-        if (index > -1)
+        if (Keywords.All.TryGetValue(value, out var keyword))
         {
-            Keyword = (Keyword)index;
+            Keyword = keyword;
         }
-       
+
     }
 
     public char? QuoteStyle { get; init; }
@@ -48,7 +46,7 @@ public class Word : StringToken
     }
 
     public override string ToString()
-    { 
+    {
         var quote = $"{(QuoteStyle.HasValue ? GetEndQuote(QuoteStyle.Value) : null)}";
 
         return $"{quote}{Value}{quote}";

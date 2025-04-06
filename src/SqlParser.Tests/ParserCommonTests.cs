@@ -4758,28 +4758,6 @@ public class ParserCommonTests : ParserTestBase
     }
 
     [Fact]
-    public void All_Keywords_Sorted()
-    {
-        var keywords = Keywords.All;
-
-        var names = System.Enum.GetNames(typeof(Keyword))
-            .Where(n => n != nameof(Keyword.undefined))
-            .ToArray();
-
-        for (var i = 0; i < names.Length; i++)
-        {
-            var name = names[i];
-
-            if (i == (int)Keyword.END_EXEC)
-            {
-                name = name.Replace("_", "-");
-            }
-
-            Assert.True(name == keywords[i]);
-        }
-    }
-
-    [Fact]
     public void Parse_Offset_And_Limit()
     {
         var expected = new Offset(new LiteralValue(new Value.Number("2")), OffsetRows.None);

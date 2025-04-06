@@ -13,27 +13,24 @@ internal static class Keywords
     /// </summary>
     static Keywords()
     {
-        var renamedKeywords = new Dictionary<string, string>
+        var renamedKeywords = new Dictionary<Keyword, string>
         {
-            {"END_EXEC", "END-EXEC"}
+            {Keyword.END_EXEC, "END-EXEC"}
         };
-        var keywords = Enum.GetNames(typeof(Keyword))
-                .Where(n => n != nameof(Keyword.undefined))
-                .ToArray();
+        var keywords = Enum.GetValues(typeof(Keyword))
+                .OfType<Keyword>()
+                .Where(n => n != Keyword.undefined)
+                .ToDictionary(n => n.ToString(), n => n, StringComparer.OrdinalIgnoreCase);
 
         foreach (var renamed in renamedKeywords)
         {
-            var index = Array.FindIndex(keywords, k => k == renamed.Key);
-            if (index > -1)
-            {
-                keywords[index] = renamed.Value;
-            }
+            keywords[renamed.Value] = renamed.Key;
         }
 
-        All = [.. keywords];
+        All = keywords;
     }
 
-    internal static readonly string[] All;
+    internal static readonly IReadOnlyDictionary<string, Keyword> All;
 
     /// These keywords can't be used as a table alias, so that `FROM table_name alias`
     /// can be parsed unambiguously without looking ahead.
@@ -893,6 +890,10 @@ public enum Keyword
     YEAR,
     ZONE,
     OUTPUT,
+
+    LOOP = 90001,
+    REDUCE = 90002,
+    REPLICATE = 90003,
 
     undefined = 99999,
 }

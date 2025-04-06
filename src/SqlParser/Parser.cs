@@ -5093,20 +5093,27 @@ public partial class Parser
 
                 Func<JoinConstraint, JoinOperator> joinAction;
 
-                if (peekKeyword is Keyword.INNER or Keyword.JOIN)
+                if (peekKeyword is Keyword.INNER)
                 {
-                    ParseKeyword(Keyword.INNER); // [ INNER ]
+                    NextToken(); // consume INNER
+                    ParseOneOfKeywords(Keyword.LOOP, Keyword.HASH, Keyword.MERGE, Keyword.REMOTE, Keyword.REDUCE, Keyword.REPLICATE);
                     ExpectKeyword(Keyword.JOIN);
+                    joinAction = constraint => new JoinOperator.Inner(constraint);
+                }
+                else if (peekKeyword is Keyword.JOIN)
+                {
+                    NextToken(); // consume JOIN
                     joinAction = constraint => new JoinOperator.Inner(constraint);
                 }
                 else if (peekKeyword is Keyword.LEFT or Keyword.RIGHT)
                 {
                     NextToken(); // consume LEFT/RIGHT
                     var isLeft = peekKeyword == Keyword.LEFT;
-                    var joinType = ParseOneOfKeywords(Keyword.OUTER, Keyword.SEMI, Keyword.ANTI, Keyword.JOIN);
+                    var joinType = ParseOneOfKeywords(Keyword.OUTER, Keyword.SEMI, Keyword.ANTI);
                     switch (joinType)
                     {
                         case Keyword.OUTER:
+                            ParseOneOfKeywords(Keyword.LOOP, Keyword.HASH, Keyword.MERGE, Keyword.REMOTE, Keyword.REDUCE, Keyword.REPLICATE);
                             ExpectKeyword(Keyword.JOIN);
                             joinAction = isLeft
                                 ? constraint => new JoinOperator.LeftOuter(constraint)
@@ -5114,6 +5121,7 @@ public partial class Parser
                             break;
 
                         case Keyword.SEMI:
+                            ParseOneOfKeywords(Keyword.LOOP, Keyword.HASH, Keyword.MERGE, Keyword.REMOTE, Keyword.REDUCE, Keyword.REPLICATE);
                             ExpectKeyword(Keyword.JOIN);
                             joinAction = isLeft
                                 ? constraint => new JoinOperator.LeftSemi(constraint)
@@ -5121,20 +5129,20 @@ public partial class Parser
                             break;
 
                         case Keyword.ANTI:
+                            ParseOneOfKeywords(Keyword.LOOP, Keyword.HASH, Keyword.MERGE, Keyword.REMOTE, Keyword.REDUCE, Keyword.REPLICATE);
                             ExpectKeyword(Keyword.JOIN);
                             joinAction = isLeft
                                 ? constraint => new JoinOperator.LeftAnti(constraint)
                                 : constraint => new JoinOperator.RightAnti(constraint);
                             break;
 
-                        case Keyword.JOIN:
+                        default:
+                            ParseOneOfKeywords(Keyword.LOOP, Keyword.HASH, Keyword.MERGE, Keyword.REMOTE, Keyword.REDUCE, Keyword.REPLICATE);
+                            ExpectKeyword(Keyword.JOIN);
                             joinAction = isLeft
                                 ? constraint => new JoinOperator.LeftOuter(constraint)
                                 : constraint => new JoinOperator.RightOuter(constraint);
                             break;
-
-                        default:
-                            throw Expected($"OUTER, SEMI, ANTI, or JOIN after {peekKeyword}");
 
                     }
                 }
@@ -6116,7 +6124,7 @@ public partial class Parser
             throw Expected($"Expected an expression, found: {v}");
         }
 
-        if (wildcardExpr is BinaryOp { Op: BinaryOperator.Eq } b && 
+        if (wildcardExpr is BinaryOp { Op: BinaryOperator.Eq } b &&
             _dialect.SupportsEqualAliasAssignment && b.Left is Identifier leftIdent)
         {
             return new SelectItem.ExpressionWithAlias(b.Right, leftIdent.Ident.Value);

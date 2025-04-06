@@ -1314,7 +1314,7 @@ public partial class Parser
                 var token = PeekToken();
                 if (token is Word w)
                 {
-                    if (System.Array.IndexOf(Keywords.All, w.Value.ToUpperInvariant()) > -1)
+                    if (Keywords.All.ContainsKey(w.Value))
                     {
                         // Not a keyword -start of a new declaration.
                         continue;
