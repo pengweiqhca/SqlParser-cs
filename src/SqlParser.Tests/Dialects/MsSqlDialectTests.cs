@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using SqlParser.Ast;
+﻿using SqlParser.Ast;
 using SqlParser.Dialects;
 using static SqlParser.Ast.Expression;
 using DataType = SqlParser.Ast.DataType;
@@ -506,5 +505,22 @@ public class MsSqlDialectTests : ParserTestBase
             Assert.Equal(expected, create);
 
         }
+    }
+
+    [Fact]
+    public void Parse_Equality()
+    {
+        const string sql = "SELECT Column1 + 1 AS Value FROM TheTable";
+
+        var select = VerifiedOnlySelect(sql);
+
+        var binary = new BinaryOp(
+            new Identifier("Column1"),
+            BinaryOperator.Plus,
+            new LiteralValue(new Value.Number("1")));
+
+        var aliased = (SelectItem.ExpressionWithAlias)select.Projection[0];
+
+        Assert.Equal(binary, aliased.Expression.AsBinaryOp());
     }
 }
